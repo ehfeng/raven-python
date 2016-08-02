@@ -32,6 +32,34 @@ from raven.utils.compat import _urlparse
 from raven.utils.encoding import to_unicode
 from raven.utils.imports import import_string
 from raven.utils.wsgi import get_headers, get_environ
+from raven.utils import once
+
+
+FLASK_DEBUG_SCRIPT = """
+<script>
+var sentry_answers_link = document.createElement('a');
+sentry_answers_link.href="https://getsentry.com/answers/";
+sentry_answers_link.textContent = "Solution";
+var sentry_answers_para = document.createElement('p')
+sentry_answers_para.className = "errormsg";
+sentry_answers_para.appendChild(sentry_answers_link);
+document.body.querySelector(".debugger .detail").appendChild(sentry_answers_para);
+</script>
+"""
+
+
+@once
+def patch_werkzeug_debugger():
+    from werkzeug.debug.tbtools import Traceback
+    original_render_full = Traceback.render_full
+
+    def render_full(self, *args, **kwargs):
+        rv = original_render_full(self, *args, **kwargs)
+        rv += FLASK_DEBUG_SCRIPT
+        return rv
+
+    Traceback.render_full = render_full
+
 
 
 def make_client(client_cls, app, dsn=None):
@@ -116,6 +144,8 @@ class Sentry(object):
         self.level = level
         self.wrap_wsgi = wrap_wsgi
         self.register_signal = register_signal
+
+        patch_werkzeug_debugger()
 
         if app:
             self.init_app(app)
