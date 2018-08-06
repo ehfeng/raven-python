@@ -378,6 +378,7 @@ class Client(object):
         """
         # create ID client-side so that it can be passed to application
         event_id = uuid.uuid4().hex
+        print(event_id)
 
         data = merge_dicts(self.context.data, data)
 
