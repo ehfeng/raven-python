@@ -512,12 +512,12 @@ class Client(object):
                 })
 
         frame = data['exception']['values'][0]['stacktrace']['frames'][0]
-        code = frame['code']
+        code = frame['vars']['SENTRY_CODE_SNIPPET']
         lineno = frame['lineno']
         frame['context_line'] = code.split('\n')[lineno - 1]
-        frame['post_context'] = '\n'.join(code.split('\n')[lineno:])
-        frame['pre_context'] = '\n'.join(code.split('\n')[:lineno - 1])
-        for var in ['request', 'SENTRY_STDOUT_SOCKET', 'SENTRY_STDOUT_FUNCTION']:
+        frame['post_context'] = code.split('\n')[lineno:]
+        frame['pre_context'] = code.split('\n')[:lineno - 1]
+        for var in ['request', 'SENTRY_CODE_SNIPPET', 'SENTRY_STDOUT_SOCKET', 'SENTRY_STDOUT_FUNCTION']:
             frame['vars'].pop(var, None)
 
         return data
