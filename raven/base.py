@@ -511,6 +511,15 @@ class Client(object):
                     'values': crumbs
                 })
 
+        frame = data['exception']['values'][0]['stacktrace']['frames'][0]
+        code = frame['code']
+        lineno = frame['lineno']
+        frame['context_line'] = code.split('\n')[lineno - 1]
+        frame['post_context'] = '\n'.join(code.split('\n')[lineno:])
+        frame['pre_context'] = '\n'.join(code.split('\n')[:lineno - 1])
+        for var in ['request', 'SENTRY_STDOUT_SOCKET', 'SENTRY_STDOUT_FUNCTION']:
+            frame['vars'].pop(var, None)
+
         return data
 
     def transform(self, data):
