@@ -512,7 +512,10 @@ class Client(object):
                 })
 
         frame = data['exception']['values'][0]['stacktrace']['frames'][0]
-        code = frame['vars']['SENTRY_CODE_SNIPPET']
+        if frame['vars']['SENTRY_CODE_SNIPPET'][0] == "'" and frame['vars']['SENTRY_CODE_SNIPPET'][-1] == "'":
+            code = frame['vars']['SENTRY_CODE_SNIPPET'][1:-1]
+        else:
+            code = frame['vars']['SENTRY_CODE_SNIPPET']
         lineno = frame['lineno']
         frame['context_line'] = code.split('\n')[lineno - 1]
         frame['post_context'] = code.split('\n')[lineno:]
